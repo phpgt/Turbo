@@ -62,6 +62,9 @@ export class Turbo {
 		else if(turboType === "submit") {
 			this.initAutoSubmit(turboElement);
 		}
+		else if(turboType === "link") {
+			this.initAutoLink(turboElement);
+		}
 		else {
 			throw new TypeError(`Unknown turbo element type: ${turboType}`);
 		}
@@ -103,6 +106,14 @@ export class Turbo {
 		turboElement.form.addEventListener("submit", this.autoSubmit);
 	}
 
+	initAutoLink = (turboElement) => {
+		if(!(turboElement instanceof HTMLAnchorElement)) {
+			throw new TypeError("data-type type \"link\" must be applied to an anchor element.");
+		}
+
+		turboElement.addEventListener("click", this.autoClick);
+	}
+
 	/**
 	 * The updateElementCollection arrays are lists of all elements that
 	 * require updating when the document updates. When something happens
@@ -136,6 +147,14 @@ export class Turbo {
 		}, 0);
 	}
 
+	autoClick = (e) => {
+		e.preventDefault();
+
+		setTimeout(() => {
+			this.clickLink(e.target, this.completeAutoSave);
+		}, 0);
+	}
+
 	submitForm = (form, callback, submitter) => {
 		let formData = this.getFormDataForButton(
 			form,
@@ -158,6 +177,32 @@ export class Turbo {
 
 			history.pushState({
 				"action": "submitForm",
+			}, "", response.url);
+			return response.text();
+		}).then(html => {
+			callback(this.parser.parseFromString(
+				html,
+				"text/html"
+			));
+		});
+	}
+
+	clickLink = (link, callback) => {
+		let url = link.href;
+
+		link.classList.add("submitting");
+		fetch(url, {
+			credentials: "same-origin"
+		}).then(response => {
+			link.classList.remove("submitting");
+
+			if(!response.ok) {
+				console.error("Link fetch error", response);
+				return;
+			}
+
+			history.pushState({
+				"action": "clickLink",
 			}, "", response.url);
 			return response.text();
 		}).then(html => {
@@ -222,11 +267,21 @@ export class Turbo {
 
 	formSubmitAutoSave = (e) => {
 		e.preventDefault();
-		document.activeElement.blur();
+		let currentActiveElement = document.activeElement;
+		if(currentActiveElement) {
+			currentActiveElement.blur();
+		}
+
 		let form = e.target;
 		if(form.form instanceof HTMLFormElement) {
 			form = form.form;
 		}
+
+		form.dataset["turboPath"] = getXPathForElement(form);
+		form.dataset["turboActive"] = getXPathForElement(
+			currentActiveElement,
+			form,
+		);
 
 		let recentlyChangedInput = form.querySelectorAll(".input-changed");
 		if(recentlyChangedInput.length > 0) {
@@ -254,6 +309,38 @@ export class Turbo {
 			autofocusElement.dataset["turboAutofocus"] = "";
 		}
 
+// Check if there's an active element in the current document, before altering it.
+		let newActiveElement = null;
+		let activeContainer = document.querySelector("[data-turbo-active]");
+		if(activeContainer) {
+			let activeContainerPath = activeContainer.dataset["turboPath"];
+			if(activeContainerPath) {
+				let activeContainerXPathResult = newDocument.evaluate(
+					activeContainerPath,
+					newDocument.documentElement,
+					null,
+					XPathResult.FIRST_ORDERED_NODE_TYPE,
+					null
+				);
+				let newActiveContainer = activeContainerXPathResult.singleNodeValue;
+
+				if(newActiveContainer) {
+					let activeElementPath = activeContainer.dataset["turboActive"];
+					if(activeElementPath) {
+						let activeElementXPathResult = newDocument.evaluate(
+							activeElementPath,
+							newActiveContainer,
+							null,
+							XPathResult.FIRST_ORDERED_NODE_TYPE,
+							null
+						);
+						newActiveElement = activeElementXPathResult.singleNodeValue;
+					}
+				}
+			}
+
+		}
+
 		for(let type of Object.keys(this.updateElementCollection)) {
 			this.updateElementCollection[type].forEach(existingElement => {
 				if(!existingElement) {
@@ -262,11 +349,9 @@ export class Turbo {
 
 				let activeElement = null;
 				let activeElementSelection = null;
-				let activeElementValue = null;
 				if(existingElement.contains(document.activeElement)) {
 					activeElement = getXPathForElement(document.activeElement);
 					activeElementSelection = [];
-					activeElementValue = document.activeElement.value;
 					if(document.activeElement.selectionStart >= 0 && document.activeElement.selectionEnd >= 0) {
 						activeElementSelection.push(document.activeElement.selectionStart, document.activeElement.selectionEnd);
 					}
@@ -302,7 +387,7 @@ export class Turbo {
 					if(elementToActivate) {
 						Turbo.DEBUG && console.debug("Element to activate", elementToActivate, activeElementSelection);
 						elementToActivate.focus();
-						elementToActivate.value = activeElementValue;
+
 						if(elementToActivate.setSelectionRange) {
 							elementToActivate.setSelectionRange(activeElementSelection[0], activeElementSelection[1]);
 						}
@@ -323,6 +408,12 @@ export class Turbo {
 					}
 				}
 			});
+		}
+
+		if(newActiveElement) {
+			newActiveElement.focus();
+			newActiveElement.blur();
+			Turbo.DEBUG && console.debug("Focussed and blurred", newActiveElement);
 		}
 
 		document.querySelectorAll("[data-turbo-autofocus]").forEach(autofocusElement => {
