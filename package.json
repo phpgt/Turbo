@@ -1,0 +1,5 @@
+{
+	"name": "@phpgt/turbo",
+	"exports": "./src/main.es6",
+	"type": "module"
+}
