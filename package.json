@@ -4,5 +4,8 @@
 	"type": "module",
 	"dependencies": {
 		"esbuild": "^0.25.2"
+	},
+	"scripts": {
+		"build": "esbuild src/main.es6 --bundle --outfile=dist/turbo.js --format=esm --platform=browser --loader:.es6=js"
 	}
 }
