@@ -8,7 +8,11 @@ export class Turbo {
 	parser;
 
 	/**
-	 * TODO: Write this doc block to explain the types of data contained.
+	 * An object storing collections of elements that need to be updated
+	 * when the document undergoes changes. The keys of this object represent
+	 * the update type (e.g., "inner", "outer", etc.), while the values are
+	 * arrays containing the corresponding DOM elements that require updates.
+	 * @type {Object.<string, HTMLElement[]>}
 	 */
 	updateElementCollection = {};
 
