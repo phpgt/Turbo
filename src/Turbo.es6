@@ -16,14 +16,18 @@ export class Turbo {
 	 */
 	updateElementCollection = {};
 
-	constructor() {
+	constructor(
+		style = undefined,
+		elementEventMapper = undefined,
+		parser = undefined,
+	) {
 		handleWindowPopState();
-		let style = new Style();
+		style = style ?? new Style();
 		style.addToDocument();
-		this.elementEventMapper = new ElementEventMapper();
+		this.elementEventMapper = elementEventMapper ?? new ElementEventMapper();
+		this.parser = parser ?? new DOMParser();
 
-		document.querySelectorAll("[data-turbo]").forEach(this.init);
-		this.parser = new DOMParser();
+		document.querySelectorAll("[data-turbo]").forEach(this.initTurboElement);
 	}
 
 	/**
@@ -41,10 +45,13 @@ export class Turbo {
 	 * data-turbo="submit" - When clicked, this element will submit its
 	 * containing form in the background
 	 */
-	init = (turboElement) => {
+	initTurboElement = (turboElement) => {
 		let turboType = turboElement.dataset["turbo"];
 
-		if(turboType === "autosave") {
+		if(turboType === "") {
+			this.initAutoContainer(turboElement);
+		}
+		else if(turboType === "autosave") {
 			this.initAutoSave(turboElement);
 		}
 		else if(turboType.startsWith("update")) {
@@ -68,6 +75,13 @@ export class Turbo {
 		else {
 			throw new TypeError(`Unknown turbo element type: ${turboType}`);
 		}
+	}
+
+	initAutoContainer = (turboElement) => {
+		if(turboElement instanceof HTMLFormElement) {
+			turboElement.addEventListener("submit", this.formSubmitAutoSave);
+		}
+// TODO: Hook up any links within the container, or other sub forms, or that kind of thing.
 	}
 
 	initAutoSave = (turboElement) => {
@@ -104,6 +118,8 @@ export class Turbo {
 		}
 
 		turboElement.form.addEventListener("submit", this.autoSubmit);
+		let existingFormEvents = this.elementEventMapper.get(turboElement.form);
+		console.log(existingFormEvents);
 	}
 
 	initAutoLink = (turboElement) => {
@@ -439,7 +455,7 @@ export class Turbo {
 			return;
 		}
 
-		newElement.querySelectorAll("[data-turbo]").forEach(this.init);
+		newElement.querySelectorAll("[data-turbo]").forEach(this.initTurboElement);
 		oldElement.querySelectorAll("[data-turbo-obj]").forEach(turboElement => {
 			let xPath = getXPathForElement(turboElement, oldElement);
 			let newTurboElement = newElement.ownerDocument.evaluate(xPath, newElement).iterateNext();

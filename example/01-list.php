@@ -10,7 +10,7 @@ if($doAction === "add") {
 	header("Location: $_SERVER[SCRIPT_NAME]");
 	exit;
 }
-if($doAction === "delete") {
+elseif($doAction === "delete") {
 	$index = $_REQUEST["index"] ?? 0;
 
 	if(isset($list[$index])) {

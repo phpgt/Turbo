@@ -35,19 +35,21 @@ export class ElementEventMapper {
 	 * addEventListener function of the browser.
 	 */
 	addEventListenerTurbo = (type, listener, options, element) => {
-		let mapObj = this.map.has(element)
-			? this.map.get(element)
-			: {};
+		// let mapObj = this.map.has(element)
+		// 	? this.map.get(element)
+		// 	: {};
 
 // If there isn't already an array for the current element's event type,
 // initialise an empty array. This is important because there may be multiple
 // events of the same type added to a single element.
-		if(mapObj[type] === undefined) {
-			mapObj[type] = [];
-		}
+// 		if(mapObj[type] === undefined) {
+// 			mapObj[type] = [];
+// 		}
 // TODO: Do we need to store the "options" in here as a tuple?
-		mapObj[type].push(listener);
-		this.map.set(element, mapObj);
+
+		if(!this.mapTypeContains(element, type, listener)) {
+			this.addToMapType(element, type, listener);
+		}
 		this.addEventListenerOriginal.call(
 			element,
 			type,
@@ -56,5 +58,21 @@ export class ElementEventMapper {
 		);
 
 		Turbo.DEBUG && console.debug(`Event ${type} added to element:`, element);
+	}
+
+	mapTypeContains = (element, type, listener) => {
+		let mapObj = this.map.get(element);
+
+		if(!mapObj) {
+			return false;
+		}
+
+		return mapObj.includes(listener);
+	}
+
+	addToMapType = (element, type, listener) => {
+		let mapObj = this.map.get(element) ?? [];
+		mapObj.push(listener);
+		this.map.set(element, mapObj);
 	}
 }
