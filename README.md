@@ -2,6 +2,8 @@
 
 Turbo is a minimalist JavaScript library that's shipped by default with [WebEngine]. Its purpose is to allow developers to build applications that follow basic HTTP principles, but gain the speed and usability of a single page application (SPA).
 
+[Read the documentation](https://www.php.gt/turbo/).
+
 To use Turbo, convert a "regular" HTML form into a _turbo form_ by adding the `data-turbo` attribute:
 
 ```html
