@@ -118,8 +118,6 @@ export class Turbo {
 		}
 
 		turboElement.form.addEventListener("submit", this.autoSubmit);
-		let existingFormEvents = this.elementEventMapper.get(turboElement.form);
-		console.log(existingFormEvents);
 	}
 
 	initAutoLink = (turboElement) => {

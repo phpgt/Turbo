@@ -1,4 +1,9 @@
 <?php
+/**
+ * This is the simplest example. Two buttons are used to increment or
+ * decrement a counter, stored in the session. The output element shows
+ * the value of the counter.
+ */
 session_start();
 
 $num = $_SESSION["num"];
@@ -18,7 +23,7 @@ elseif($doAction === "decrement") {
 }
 ?><!doctype html>
 <meta charset="utf-8" />
-<title>PHPGT/Turbo example 02 increment</title>
+<title>PHPGT/Turbo example 01 increment</title>
 <style>
 textarea {
 	width: 24rem;
