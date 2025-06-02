@@ -1,11 +1,30 @@
 import {Turbo} from "./Turbo.es6";
 
+/**
+ * The `addEventListener` behaviour of the DOM is overridden here to provide
+ * functionality for tracking event listeners added to elements.
+ * This is necessary because as elements in the DOM are replaced/updated
+ * dynamically, their corresponding event listeners will need to be reattached
+ * automatically.
+ *
+ * Only one instance of the ElementEventMapper is necessary per Turbo instance,
+ * as the constructor handles the override.
+ *
+ * A reference to the original `addEventListener` functionality is stored in
+ * `addEventListenerOriginal`, before it is replace by the function called
+ * `addEventListenerTurbo`.
+ *
+ * The map property is a map of objects: the outer map's key is the HTMLElement,
+ * which contains an object, where the keys are the type of event listener such
+ * as "click", "submit", etc.
+ */
 export class ElementEventMapper {
 	map;
 	addEventListenerOriginal;
 
 	constructor() {
-		this.map = new Map();
+// TODO: Is a WeakMap a better choice than Map? WeakMaps will automatically get garbage-collected when DOM nodes are removed, but do not have iteration functions.
+		this.map = new WeakMap();
 		this.addEventListenerOriginal = EventTarget.prototype.addEventListener;
 
 		const self = this;
@@ -14,12 +33,12 @@ export class ElementEventMapper {
 		};
 	}
 
-	has(name) {
-		return this.map.has(name);
+	has(element) {
+		return this.map.has(element);
 	}
 
-	get(name) {
-		return this.map.get(name);
+	get(element) {
+		return this.map.get(element);
 	}
 
 	/**
@@ -35,18 +54,7 @@ export class ElementEventMapper {
 	 * addEventListener function of the browser.
 	 */
 	addEventListenerTurbo = (type, listener, options, element) => {
-		// let mapObj = this.map.has(element)
-		// 	? this.map.get(element)
-		// 	: {};
-
-// If there isn't already an array for the current element's event type,
-// initialise an empty array. This is important because there may be multiple
-// events of the same type added to a single element.
-// 		if(mapObj[type] === undefined) {
-// 			mapObj[type] = [];
-// 		}
 // TODO: Do we need to store the "options" in here as a tuple?
-
 		if(!this.mapTypeContains(element, type, listener)) {
 			this.addToMapType(element, type, listener);
 		}
@@ -63,16 +71,29 @@ export class ElementEventMapper {
 	mapTypeContains = (element, type, listener) => {
 		let mapObj = this.map.get(element);
 
-		if(!mapObj) {
+		if(!mapObj || !mapObj[type]) {
 			return false;
 		}
 
-		return mapObj.includes(listener);
+		return mapObj[type].includes(listener);
 	}
 
 	addToMapType = (element, type, listener) => {
-		let mapObj = this.map.get(element) ?? [];
-		mapObj.push(listener);
-		this.map.set(element, mapObj);
+		let mapObj = this.map.get(element);
+
+		if(!mapObj) {
+			mapObj = {};
+			this.map.set(element, mapObj);
+		}
+
+		if(!mapObj[type]) {
+			mapObj[type] = [];
+		}
+
+		if(!mapObj[type].includes(listener)) {
+			mapObj[type].push(listener);
+		}
+// Objects and arrays are passed by reference in ES6, so there's no need to
+// update this.map or mapObj's contents.
 	}
 }

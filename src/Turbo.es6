@@ -406,13 +406,16 @@ export class Turbo {
 							elementToActivate.setSelectionRange(activeElementSelection[0], activeElementSelection[1]);
 						}
 
+// TODO: I don't think we actually need to force a click, let alone do it in a timeout.
+// I can't understand why I thought this was necessary. I'm sure it was at some point, and maybe it still is...
+// ... but I need to be able to explain what it's doing before I remove this comment.
 						let completeClickFunction = () => {
 							elementToActivate.removeEventListener("mouseup", completeClickFunction);
 
 							setTimeout(() => {
 								Turbo.DEBUG && console.debug("Completing click", elementToActivate);
 								elementToActivate.click();
-							}, 10)
+							}, 0)
 						};
 						this.elementEventMapper.addEventListenerOriginal.call(
 							elementToActivate,
