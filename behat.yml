@@ -1,0 +1,17 @@
+default:
+  suites:
+    default:
+      paths:
+        - test/behat
+      contexts:
+        - FeatureContext
+      bootstrap: test/behat/bootstrap
+  extensions:
+    Behat\MinkExtension:
+      base_url: http://localhost:8080
+      default_session: selenium2
+      browser_name: firefox
+      selenium2:
+        wd_host: http://localhost:4444/wd/hub
+        capabilities:
+          browserName: firefox

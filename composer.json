@@ -1,0 +1,29 @@
+{
+	"name": "phpgt/turbo",
+	"require-dev": {
+		"behat/behat": "^3.13",
+		"behat/mink-extension": "^2.3",
+		"behat/mink-selenium2-driver": "^1.6"
+	},
+
+	"scripts": {
+		"test": "vendor/bin/behat",
+		"post-install-cmd": [
+			"@download-selenium-server",
+			"@download-geckodriver"
+		],
+		"post-update-cmd": [
+			"@download-selenium-server",
+			"@download-geckodriver"
+		],
+		"download-selenium-server": [
+			"if [ ! -f selenium-server-standalone-3.141.59.jar ]; then wget https://github.com/SeleniumHQ/selenium/releases/download/selenium-3.141.59/selenium-server-standalone-3.141.59.jar; fi"
+		],
+		"download-geckodriver": [
+			"if [ ! -f geckodriver ]; then wget https://github.com/mozilla/geckodriver/releases/download/v0.33.0/geckodriver-v0.33.0-linux64.tar.gz && tar -xzf geckodriver-v0.33.0-linux64.tar.gz && chmod +x geckodriver; fi"
+		],
+		"start-selenium": [
+			"java -Dwebdriver.gecko.driver=./geckodriver -jar selenium-server-standalone-3.141.59.jar"
+		]
+	}
+}

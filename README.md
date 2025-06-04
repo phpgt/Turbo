@@ -41,3 +41,47 @@ There used to be a library called _TurboLinks_, which heavily inspired the devel
 
 [WebEngine]: https://www.php.gt/webengine/
 [fetch]: https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API
+
+## Setting up and running Behat tests
+
+Behat is used for browser testing the Turbo library. Follow these steps to set up and run the tests:
+
+### 1. Install dependencies
+
+```bash
+composer install
+```
+
+This will automatically download Selenium Server and GeckoDriver required for browser testing.
+
+### 2. Start Selenium Server
+
+Start Selenium Server with GeckoDriver using the Composer script:
+
+```bash
+composer start-selenium
+```
+
+Alternatively, you can start it manually:
+
+```bash
+java -Dwebdriver.gecko.driver=./geckodriver -jar selenium-server-standalone-3.141.59.jar
+```
+
+### 3. Run a local web server
+
+Ensure your local web server is running and accessible at http://localhost:8080.
+
+### 4. Run the Behat tests
+
+```bash
+composer test
+```
+
+Or run Behat directly:
+
+```bash
+vendor/bin/behat
+```
+
+This will run all the Behat tests defined in the `test/behat` directory.

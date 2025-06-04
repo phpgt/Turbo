@@ -24,18 +24,18 @@ var ElementEventMapper = class {
   map;
   addEventListenerOriginal;
   constructor() {
-    this.map = /* @__PURE__ */ new Map();
+    this.map = /* @__PURE__ */ new WeakMap();
     this.addEventListenerOriginal = EventTarget.prototype.addEventListener;
     const self = this;
     Element.prototype.addEventListener = function(type, listener, options) {
       self.addEventListenerTurbo(type, listener, options, this);
     };
   }
-  has(name) {
-    return this.map.has(name);
+  has(element) {
+    return this.map.has(element);
   }
-  get(name) {
-    return this.map.get(name);
+  get(element) {
+    return this.map.get(element);
   }
   /**
    * This function overrides the Element.addEventListener function. It is
@@ -50,14 +50,9 @@ var ElementEventMapper = class {
    * addEventListener function of the browser.
    */
   addEventListenerTurbo = (type, listener, options, element) => {
-    let mapObj = this.map.has(element) ? this.map.get(element) : {};
-    if (mapObj[type] === void 0) {
-      mapObj[type] = [];
+    if (!this.mapTypeContains(element, type, listener)) {
+      this.addToMapType(element, type, listener);
     }
-    if (!mapObj[type].includes(listener)) {
-      mapObj[type].push(listener);
-    }
-    this.map.set(element, mapObj);
     this.addEventListenerOriginal.call(
       element,
       type,
@@ -65,6 +60,26 @@ var ElementEventMapper = class {
       options
     );
     Turbo.DEBUG && console.debug(`Event ${type} added to element:`, element);
+  };
+  mapTypeContains = (element, type, listener) => {
+    let mapObj = this.map.get(element);
+    if (!mapObj || !mapObj[type]) {
+      return false;
+    }
+    return mapObj[type].includes(listener);
+  };
+  addToMapType = (element, type, listener) => {
+    let mapObj = this.map.get(element);
+    if (!mapObj) {
+      mapObj = {};
+      this.map.set(element, mapObj);
+    }
+    if (!mapObj[type]) {
+      mapObj[type] = [];
+    }
+    if (!mapObj[type].includes(listener)) {
+      mapObj[type].push(listener);
+    }
   };
 };
 
@@ -82,19 +97,14 @@ var Turbo = class _Turbo {
    * @type {Object.<string, HTMLElement[]>}
    */
   updateElementCollection = {};
-  constructor(autoStart = true) {
-    if (autoStart) {
-      this.init();
-    }
-  }
-  init = () => {
+  constructor(style = void 0, elementEventMapper = void 0, parser = void 0) {
     handleWindowPopState();
-    let style = new Style();
+    style = style ?? new Style();
     style.addToDocument();
-    this.elementEventMapper = new ElementEventMapper();
+    this.elementEventMapper = elementEventMapper ?? new ElementEventMapper();
+    this.parser = parser ?? new DOMParser();
     document.querySelectorAll("[data-turbo]").forEach(this.initTurboElement);
-    this.parser = new DOMParser();
-  };
+  }
   /**
    * Initialise a single element in the document with its functionality
    * as specified by the data-turbo attribute.
@@ -164,8 +174,6 @@ var Turbo = class _Turbo {
       throw new TypeError('data-turbo type "submit" must have a containing form element.');
     }
     turboElement.form.addEventListener("submit", this.autoSubmit);
-    let existingFormEvents = this.elementEventMapper.get(turboElement.form);
-    console.log(existingFormEvents);
   };
   initAutoLink = (turboElement) => {
     if (!(turboElement instanceof HTMLAnchorElement)) {
@@ -399,18 +407,6 @@ var Turbo = class _Turbo {
             if (elementToActivate.setSelectionRange) {
               elementToActivate.setSelectionRange(activeElementSelection[0], activeElementSelection[1]);
             }
-            let completeClickFunction = () => {
-              elementToActivate.removeEventListener("mouseup", completeClickFunction);
-              setTimeout(() => {
-                _Turbo.DEBUG && console.debug("Completing click", elementToActivate);
-                elementToActivate.click();
-              }, 10);
-            };
-            this.elementEventMapper.addEventListenerOriginal.call(
-              elementToActivate,
-              "mouseup",
-              completeClickFunction
-            );
           }
         }
       });
