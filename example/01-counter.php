@@ -21,18 +21,9 @@ elseif($doAction === "decrement") {
 	header("Location: $_SERVER[SCRIPT_NAME]");
 	exit;
 }
-?><!doctype html>
-<meta charset="utf-8" />
+require(__DIR__ . "/_header.php");
+?>
 <title>PHPGT/Turbo example 01 increment</title>
-<style>
-textarea {
-	width: 24rem;
-}
-</style>
-<script type="module" src="../dist/turbo.js" defer></script>
-
-<textarea placeholder="Without Turbo, submitting the form would lose any content typed into this box.">
-</textarea>
 
 <form method="post">
 	<output data-turbo="update-inner"><?php echo number_format($num);?></output>

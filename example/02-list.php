@@ -33,19 +33,9 @@ elseif($doAction === "delete") {
 	exit;
 }
 
-?><!doctype html>
-<meta charset="utf-8" />
+require(__DIR__ . "/_header.php");
+?>
 <title>PHPGT/Turbo example 02 list</title>
-<style>
-textarea {
-	width: 24rem;
-}
-</style>
-<script type="module" src="../dist/turbo.js" defer></script>
-
-<textarea placeholder="Without Turbo, submitting the form would lose any content typed into this box.">
-</textarea>
-
 <form method="post" data-turbo="update-inner">
 	<ul>
 		<?php

@@ -1,48 +1,7 @@
-<!doctype html>
-<html lang="en">
-<head>
-	<meta charset="utf-8" />
-	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
-	<title>PHP.GT Turbo Examples</title>
-	<style>
-		html, body {
-			height: 100%;
-		}
-		body {
-			display: flex;
-			justify-content: stretch;
-			flex-direction: column;
-			margin: 0;
-		}
-		iframe {
-			flex-grow: 1;
-			border: none;
-		}
-		nav {
-			ul {
-				display: flex;
-				gap: 1rem;
-				list-style-type: none;
-			}
-		}
-	</style>
-</head>
-<body>
-	<nav>
-		<ul>
-			<?php
-			chdir(__DIR__);
-			foreach(glob("*.php") as $file) {
-				if($file === "index.php") {
-					continue;
-				}
-
-				echo "<li><a href='$file' target='frame'>$file</a></li>";
-			}
-			?>
-		</ul>
-	</nav>
-	<iframe name="frame"></iframe>
-</body>
-</html>
+<?php
+require(__DIR__ . "/_header.php");
+?>
+<title>PHP.GT Turbo Examples</title>
+<p data-turbo-debug>Turbo - choose an example from the list above.</p>
+<p>This very basic website has two purposes: 1, to show simple interactive examples from the documentation; 2, to provide automated testing using Behat.</p>
+<p>Every time the code is changed, GitHub Actions automatically runs the behat tests that perform actions to assure the functionality is working in a real world Firefox web browser. You can run the tests yourself by running `composer install` followed by `composer test`.</p>

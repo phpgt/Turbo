@@ -40,20 +40,10 @@ elseif($doAction === "decrementB") {
 	exit;
 }
 
-?><!doctype html>
-<meta charset="utf-8" />
+require(__DIR__ . "/_header.php");
+?>
 <title>PHPGT/Turbo example 03 multiple forms</title>
-<style>
-	textarea {
-		width: 24rem;
-	}
-</style>
-<script type="module" src="../dist/turbo.js" defer></script>
-
-<textarea placeholder="Without Turbo, submitting the form would lose any content typed into this box.">
-</textarea>
-
-<main data-turbo>
+<section data-turbo>
 	<form method="post">
 		<h1>Counter A</h1>
 		<output><?php echo number_format($numA);?></output>
@@ -70,4 +60,4 @@ elseif($doAction === "decrementB") {
 
 	<h1>A + B =</h1>
 	<output><?php echo $sum;?></output>
-</main>
+</section>
