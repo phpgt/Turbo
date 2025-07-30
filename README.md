@@ -54,7 +54,17 @@ composer install
 
 This will automatically download Selenium Server and GeckoDriver required for browser testing.
 
-### 2. Start Selenium Server
+#### Verify your setup
+
+You can verify that all dependencies are correctly installed by running the test setup script:
+
+```bash
+./test/behat/test-setup.sh
+```
+
+This script will check if all required components are in place and provide instructions for running the tests.
+
+### 2. Start Selenium Server with GeckoDriver
 
 Start Selenium Server with GeckoDriver using the Composer script:
 
@@ -62,13 +72,27 @@ Start Selenium Server with GeckoDriver using the Composer script:
 composer start-selenium
 ```
 
-Alternatively, you can start it manually:
+This will start Selenium Server using the GeckoDriver that was downloaded during the installation process. The server will run in the foreground, so you'll need to keep this terminal window open while running the tests.
 
-```bash
-java -Dwebdriver.gecko.driver=./geckodriver -jar selenium-server-standalone-3.141.59.jar
-```
+Note: If you're running the tests in a headless environment (like a CI server), the tests will run in headless mode automatically.
+
+#### Troubleshooting
+
+If you encounter issues with Selenium or GeckoDriver:
+
+1. Make sure Firefox is installed on your system.
+2. If the drivers weren't downloaded automatically, you can manually run:
+   ```bash
+   composer download-selenium-server
+   composer download-geckodriver
+   ```
+3. Check that the driver files exist in the `test/behat/driver` directory.
+4. Ensure that the Selenium Server is running before executing the Behat tests.
+5. If you see timeout errors, try increasing the timeout in the Behat configuration.
 
 ### 3. Run a local web server
+
+Start PHP's development server with `php -S 0.0.0.0:8080`
 
 Ensure your local web server is running and accessible at http://localhost:8080.
 
@@ -81,7 +105,7 @@ composer test
 Or run Behat directly:
 
 ```bash
-vendor/bin/behat
+vendor/bin/behat -c behat.yml
 ```
 
 This will run all the Behat tests defined in the `test/behat` directory.

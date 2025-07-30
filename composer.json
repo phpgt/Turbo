@@ -1,13 +1,19 @@
 {
 	"name": "phpgt/turbo",
 	"require-dev": {
-		"behat/behat": "^3.13",
-		"behat/mink-extension": "^2.3",
-		"behat/mink-selenium2-driver": "^1.6"
+		"behat/behat": "^3.11",
+		"friends-of-behat/mink-extension": "^2.7",
+		"behat/mink-goutte-driver": "^2.0",
+		"behat/mink-selenium2-driver": "1.6.0",
+		"behat/gherkin": "4.9.0"
 	},
-
+	"autoload-dev": {
+		"psr-4": {
+			"App\\Test\\Behat\\Bootstrap\\": "test/behat/bootstrap"
+		}
+	},
 	"scripts": {
-		"test": "vendor/bin/behat",
+		"test": "vendor/bin/behat -c behat.yml",
 		"post-install-cmd": [
 			"@download-selenium-server",
 			"@download-geckodriver"
@@ -17,13 +23,13 @@
 			"@download-geckodriver"
 		],
 		"download-selenium-server": [
-			"if [ ! -f selenium-server-standalone-3.141.59.jar ]; then wget https://github.com/SeleniumHQ/selenium/releases/download/selenium-3.141.59/selenium-server-standalone-3.141.59.jar; fi"
+			"if [ ! -f ./test/behat/driver/selenium.jar ]; then mkdir -p ./test/behat/driver/ && wget https://github.com/SeleniumHQ/selenium/releases/download/selenium-4.12.0/selenium-server-4.12.0.jar && mv selenium-server-*.jar ./test/behat/driver/selenium.jar; fi"
 		],
 		"download-geckodriver": [
-			"if [ ! -f geckodriver ]; then wget https://github.com/mozilla/geckodriver/releases/download/v0.33.0/geckodriver-v0.33.0-linux64.tar.gz && tar -xzf geckodriver-v0.33.0-linux64.tar.gz && chmod +x geckodriver; fi"
+			"if [ ! -f ./test/behat/driver/geckodriver ]; then mkdir -p ./test/behat/driver/ && wget https://github.com/mozilla/geckodriver/releases/download/v0.33.0/geckodriver-v0.33.0-linux64.tar.gz && tar -xzf geckodriver-*-linux64.tar.gz && chmod +x geckodriver && rm geckodriver-v0.33.0-linux64.tar.gz && mv geckodriver ./test/behat/driver/.; fi"
 		],
 		"start-selenium": [
-			"java -Dwebdriver.gecko.driver=./geckodriver -jar selenium-server-standalone-3.141.59.jar"
+			"java -Dwebdriver.gecko.driver=./test/behat/driver/geckodriver -Dwebdriver.firefox.args=-headless -jar ./test/behat/driver/selenium.jar standalone --host 127.0.0.1 --selenium-manager true"
 		]
 	}
 }
