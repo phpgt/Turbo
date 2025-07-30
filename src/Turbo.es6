@@ -182,9 +182,8 @@ export class Turbo {
 			credentials: "same-origin",
 			body: formData,
 		}).then(response => {
-			form.classList.remove("submitting");
-
 			if(!response.ok) {
+				form.classList.remove("submitting");
 				console.error("Form submission error", response);
 				return;
 			}
@@ -198,6 +197,7 @@ export class Turbo {
 				html,
 				"text/html"
 			));
+			form.classList.remove("submitting");
 		});
 	}
 
@@ -267,6 +267,7 @@ export class Turbo {
 		if(form.form instanceof HTMLFormElement) {
 			let element = form;
 			element.classList.add("input-changed");
+			element.setAttribute("data-turbo-active", "");
 			(function(c_element) {
 				setTimeout(function() {
 					c_element.classList.remove("input-changed");
